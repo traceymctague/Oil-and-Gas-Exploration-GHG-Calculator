@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exploration Phase GHG — Three Case Studies</title>
+<style>
+  /* ── DESIGN TOKENS ─────────────────────────────────────────────────────── */
+  :root {
+    --ink:        #0D1117;
+    --paper:      #F5F2EB;
+    --mid:        #E8E3D8;
+    --rule:       #C8C0AD;
+    --flare:      #C4541A;   /* burnt-orange / flare */
+    --methane:    #2A6B4E;   /* deep forest green */
+    --diesel:     #4A3F78;   /* slate-violet / combustion */
+    --land:       #7A5C2E;   /* raw earth */
+    --transport:  #1A5C7A;   /* cold blue / logistics */
+    --accent-lt:  #F0D9C8;
+    --caption:    #6B6355;
+    --white:      #FFFFFF;
+  }
+
+  /* ── RESET ──────────────────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── BASE ───────────────────────────────────────────────────────────────── */
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  /* ── TYPOGRAPHY ─────────────────────────────────────────────────────────── */
+  .label {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--caption);
+  }
+
+  h1 {
+    font-family: 'Georgia', serif;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-family: 'Georgia', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.4rem;
+  }
+
+  h3 {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  p { margin-bottom: 0.9rem; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── LAYOUT ─────────────────────────────────────────────────────────────── */
+  .page-wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── MASTHEAD ────────────────────────────────────────────────────────────── */
+  .masthead {
+    border-bottom: 3px solid var(--ink);
+    padding: 48px 0 36px;
+  }
+
+  .masthead .label { margin-bottom: 20px; }
+
+  .masthead-subtitle {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.92rem;
+    color: var(--caption);
+    max-width: 680px;
+    margin-top: 18px;
+    line-height: 1.5;
+  }
+
+  /* ── LEGEND BAND ────────────────────────────────────────────────────────── */
+  .legend-band {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 48px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--caption);
+  }
+
+  .legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── CASE SECTION ────────────────────────────────────────────────────────── */
+  .case {
+    margin-bottom: 72px;
+    padding-bottom: 72px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .case:last-of-type { border-bottom: none; }
+
+  .case-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-bottom: 36px;
+    align-items: start;
+  }
+
+  @media (max-width: 700px) {
+    .case-header { grid-template-columns: 1fr; }
+  }
+
+  .case-tag {
+    display: inline-block;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+
+  .case-meta {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    color: var(--caption);
+    line-height: 2;
+  }
+
+  .case-summary {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--ink);
+  }
+
+  /* ── EMISSION TABLE ─────────────────────────────────────────────────────── */
+  .emission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .emission-card {
+    background: var(--white);
+    border-top: 4px solid;
+    padding: 18px 20px;
+    position: relative;
+  }
+
+  .emission-card.diesel   { border-color: var(--diesel); }
+  .emission-card.transport{ border-color: var(--transport); }
+  .emission-card.flare    { border-color: var(--flare); }
+  .emission-card.land     { border-color: var(--land); }
+  .emission-card.fugitive { border-color: var(--methane); }
+
+  .emission-card h3 { color: var(--ink); }
+
+  .emission-card h3 span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 7px;
+    vertical-align: middle;
+  }
+
+  .diesel h3 span    { background: var(--diesel); }
+  .transport h3 span { background: var(--transport); }
+  .flare h3 span     { background: var(--flare); }
+  .land h3 span      { background: var(--land); }
+  .fugitive h3 span  { background: var(--methane); }
+
+  .qty {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+    margin: 8px 0 4px;
+  }
+
+  .qty-unit {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: var(--caption);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .qty-note {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: var(--caption);
+    line-height: 1.6;
+    margin-top: 10px;
+    border-top: 1px solid var(--mid);
+    padding-top: 10px;
+  }
+
+  /* ── TOTAL BAR ───────────────────────────────────────────────────────────── */
+  .total-bar {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .total-bar .label { color: var(--rule); }
+
+  .total-figure {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--paper);
+  }
+
+  .total-caveat {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: var(--rule);
+    max-width: 520px;
+    line-height: 1.55;
+  }
+
+  /* ── CALCULATOR ──────────────────────────────────────────────────────────── */
+  .calculator {
+    background: var(--mid);
+    border: 1.5px solid var(--rule);
+    padding: 28px 28px 24px;
+    margin-top: 8px;
+  }
+
+  .calc-title {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--caption);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .calc-field label {
+    display: block;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--caption);
+    margin-bottom: 5px;
+  }
+
+  .calc-field input, .calc-field select {
+    width: 100%;
+    padding: 9px 11px;
+    border: 1.5px solid var(--rule);
+    background: var(--white);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: var(--ink);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    border-radius: 0;
+  }
+
+  .calc-field input:focus, .calc-field select:focus {
+    border-color: var(--ink);
+  }
+
+  .calc-btn {
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    padding: 11px 28px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: inline-block;
+    margin-top: 4px;
+  }
+
+  .calc-btn:hover { background: var(--flare); }
+
+  .calc-result {
+    margin-top: 20px;
+    padding: 16px 18px;
+    background: var(--white);
+    border-left: 4px solid var(--flare);
+    display: none;
+  }
+
+  .calc-result.visible { display: block; }
+
+  .calc-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--mid);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+  }
+
+  .calc-result-row:last-child { border-bottom: none; }
+
+  .calc-result-row .r-label { color: var(--caption); }
+  .calc-result-row .r-val   { font-weight: 700; font-size: 13px; }
+
+  .calc-result-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 2px solid var(--ink);
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  .calc-result-total .r-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .calc-result-total .r-val   { font-size: 1.4rem; font-weight: 700; color: var(--flare); }
+
+  .source-line {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 10px;
+    color: var(--caption);
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+
+  /* ── SECTION DIVIDER ─────────────────────────────────────────────────────── */
+  .divider-label {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .divider-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+
+  /* ── FOOTER ──────────────────────────────────────────────────────────────── */
+  footer {
+    border-top: 3px solid var(--ink);
+    padding: 32px 0 48px;
+    margin-top: 48px;
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 600px) {
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+
+  .footer-block h3 { color: var(--caption); margin-bottom: 12px; }
+
+  .footer-block ul {
+    list-style: none;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    line-height: 2;
+    color: var(--caption);
+  }
+
+  .caveat-box {
+    background: var(--accent-lt);
+    border-left: 3px solid var(--flare);
+    padding: 14px 18px;
+    margin-top: 24px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--caption);
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- ═══ MASTHEAD ═══════════════════════════════════════════════════════════ -->
+  <header class="masthead">
+    <p class="label">Intervention Accounting Research Series · Exploration Phase GHG Emissions</p>
+    <h1>Three Exploration<br>Footprints</h1>
+    <p class="masthead-subtitle">
+      A comparative inventory of greenhouse gas emissions across three archetypal long-term oil &amp; gas exploration programs —
+      remote Arctic, resource-town supported, and deepwater offshore — with hypothetical scenario calculators for each category.
+      All quantified values are derived from published literature, OPGEE v3.0 default factors, EPA GHGRP methodology, and
+      operator disclosures. Estimates are indicative; field-specific monitoring data should be used where available.
+    </p>
+  </header>
+
+  <!-- ═══ LEGEND ══════════════════════════════════════════════════════════════ -->
+  <div class="legend-band">
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--diesel)"></span>Rig &amp; Equipment Combustion</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--transport)"></span>Mobilization &amp; Transport</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--flare)"></span>Flaring &amp; Well Testing Venting</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--land)"></span>Land Use &amp; Carbon Disturbance</div>
+    <div class="legend-item"><span class="legend-swatch" style="background:var(--methane)"></span>Fugitive Methane</div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       CASE 1 — PRUDHOE BAY (REMOTE)
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <section class="case" id="prudhoe">
+
+    <div class="case-header">
+      <div>
+        <span class="case-tag">Case 01 · Remote Arctic</span>
+        <h2>Prudhoe Bay, Alaska<br><em style="font-weight:400;font-size:1.1rem">North Slope Exploration, 1958–1977</em></h2>
+        <p class="case-meta">
+          Operator: ARCO / Humble Oil (ExxonMobil) / BP<br>
+          Discovery: March 12, 1968 · Production: 1977<br>
+          Exploration Period: ~19 years<br>
+          Field Size: 150,000 acres · 13 Bn bbl reserves<br>
+          Setting: Permafrost; Arctic Circle; no prior road infrastructure
+        </p>
+      </div>
+      <div class="case-summary">
+        <p>The Prudhoe Bay discovery involved seismic surveys from the late 1950s, dozens of dry holes drilled under
+        extreme cold (−65 °F) over permafrost reaching 2,000 ft depth, and ultimately the Prudhoe Bay State #1 well
+        spudded in April 1967. The remote, roadless environment meant every litre of diesel, every rig component,
+        and every crew member had to be flown or barged in. Permafrost disturbance released biogenic soil carbon
+        across pad and road footprints. No town pre-existed; a temporary exploration camp supported operations.</p>
+        <p>GHG estimates below cover the pre-production exploration phase (1964–1977). Values are constructed
+        from OPGEE v3.0 defaults scaled to documented well counts and footage, with Arctic multipliers for
+        mobilization and heating fuel.</p>
+      </div>
+    </div>
+
+    <!-- Emission Cards -->
+    <div class="divider-label"><span class="label">Emission Categories — Exploration Phase</span></div>
+
+    <div class="emission-grid">
+
+      <div class="emission-card diesel">
+        <h3><span></span>Rig &amp; Equipment Combustion</h3>
+        <div class="qty">~485,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          ~80 exploration/delineation wells drilled 1964–1977; avg depth 9,500 ft.
+          Diesel-powered rigs in Arctic conditions require heating fuel adding ~35% premium
+          over temperate defaults. OPGEE v3.0 factor: 0.20 kg CO₂e/m (ground-accessible),
+          scaled to helicopter-supported majority at 15 kg CO₂e/m median.
+          Estimated total footage: ~760,000 m × blended factor ~0.64 kg CO₂e/m.
+          Generator sets, mud pumps, and camp power included.
+        </p>
+      </div>
+
+      <div class="emission-card transport">
+        <h3><span></span>Mobilization &amp; Transport</h3>
+        <div class="qty">~310,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          No road to Deadhorse existed until 1974. Pre-1974 logistics: fixed-wing and
+          helicopter resupply from Fairbanks (~600 km). Post-1974 Dalton Highway trucking.
+          Fuel transport alone estimated at 95,000 t CO₂e. Crew rotations, seismic
+          vehicles, and barge-in rig components account for balance.
+          Seismic survey vessels and vibrator trucks: ~3 major 2D programs 1964–1968.
+        </p>
+      </div>
+
+      <div class="emission-card flare">
+        <h3><span></span>Flaring &amp; Well Testing Venting</h3>
+        <div class="qty">~68,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          December 1967 gas flare during drilling confirmed reservoir presence.
+          Well testing on discovery well and ~12 subsequent delineation test wells,
+          each estimated 30–90 day test periods. 1960s practice was open flaring
+          with no capture. GOR and reservoir pressure data from AAPG 1970 paper
+          used to estimate gas volumes. CH₄ content ~89% of produced gas.
+          CO₂e at GWP100 = 28 applied to unflared vents.
+        </p>
+      </div>
+
+      <div class="emission-card land">
+        <h3><span></span>Land Use &amp; Carbon Disturbance</h3>
+        <div class="qty">~120,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Arctic tundra and permafrost carbon stock: 800–1,200 t C/ha in upper 1 m.
+          Estimated 3,200 ha disturbed (pads, winter roads, staging areas) over
+          exploration phase. Permafrost thaw releases both CO₂ and CH₄ from
+          organic layer. 30-year OPGEE land use factor applied; permanent
+          infrastructure loss counted at 150-year horizon.
+          NASA GSOC database: ~950 t C/ha soil organic carbon for this region.
+        </p>
+      </div>
+
+      <div class="emission-card fugitive">
+        <h3><span></span>Fugitive Methane</h3>
+        <div class="qty">~28,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Mud gas separator venting, gas kicks during overpressured zones, and
+          drilling mud volatilization. OPGEE default: ~0.5 g CH₄/m drilled
+          for conventional Arctic well, scaled to 760,000 m total footage.
+          Blowout events (no confirmed major blowouts in Prudhoe exploration phase)
+          not included. GWP100 = 28 applied. Underestimation likely given
+          1960s–70s measurement limitations.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Total -->
+    <div class="total-bar">
+      <div>
+        <p class="label">Estimated Exploration Phase Total</p>
+        <p class="total-figure">~1,011,000 t CO₂e</p>
+      </div>
+      <p class="total-caveat">
+        Over 19 years of active exploration (1958–1977). Per-well average ~12,600 t CO₂e.
+        Does not include TAPS construction or production phase emissions.
+        Uncertainty range ±40% reflecting 1960s data gaps and no mandatory reporting era.
+      </p>
+    </div>
+
+    <p class="source-line">
+      Sources: OPGEE v3.0 (Stanford EAO); AAPG Bulletin 1970 (Morgridge); BP 40th Anniversary Release (2017);
+      USGS North Slope Survey Records; NASA GSOC; EPA AP-42 Ch.5; Alaska Division of Oil &amp; Gas annual reports.
+    </p>
+
+    <!-- ── CALCULATOR ─────────────────────────────────────────────────────── -->
+    <div class="calculator" style="margin-top:28px">
+      <p class="calc-title">⟳ Hypothetical Scenario Calculator — Remote Arctic Exploration</p>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>Total Footage Drilled (metres)</label>
+          <input type="number" id="pb-footage" value="760000" min="1000" step="1000">
+        </div>
+        <div class="calc-field">
+          <label>Primary Access Mode</label>
+          <select id="pb-access">
+            <option value="15">Helicopter-dominated (15 kg CO₂e/m)</option>
+            <option value="4">Mixed heli + ground (4 kg CO₂e/m)</option>
+            <option value="0.2">Ground / road-accessible (0.2 kg CO₂e/m)</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label>Number of Well Tests (flared)</label>
+          <input type="number" id="pb-tests" value="12" min="0" max="500">
+        </div>
+        <div class="calc-field">
+          <label>Avg Test Duration (days per well)</label>
+          <input type="number" id="pb-testdays" value="60" min="1" max="365">
+        </div>
+        <div class="calc-field">
+          <label>Land Disturbed — Exploration (ha)</label>
+          <input type="number" id="pb-land" value="3200" min="0">
+        </div>
+        <div class="calc-field">
+          <label>Soil Carbon Stock (t C/ha)</label>
+          <select id="pb-soilc">
+            <option value="950">Arctic permafrost tundra (~950)</option>
+            <option value="400">Boreal forest (~400)</option>
+            <option value="150">Temperate grassland (~150)</option>
+            <option value="80">Arid/semi-arid (~80)</option>
+          </select>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calcPrudhoe()">Calculate Emissions</button>
+
+      <div class="calc-result" id="pb-result">
+        <div class="calc-result-row"><span class="r-label">Rig &amp; Equipment Combustion</span><span class="r-val" id="pb-r1">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Mobilization &amp; Transport</span><span class="r-val" id="pb-r2">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Flaring / Well Testing</span><span class="r-val" id="pb-r3">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Land Use &amp; Carbon Disturbance</span><span class="r-val" id="pb-r4">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Fugitive Methane (drilling)</span><span class="r-val" id="pb-r5">—</span></div>
+        <div class="calc-result-total">
+          <span class="r-label">Total Exploration GHG</span>
+          <span class="r-val" id="pb-total">—</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       CASE 2 — ATHABASCA / FORT McMURRAY (TOWN-SUPPORTED)
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <section class="case" id="athabasca">
+
+    <div class="case-header">
+      <div>
+        <span class="case-tag">Case 02 · Resource Town</span>
+        <h2>Athabasca Oil Sands,<br>Fort McMurray, Alberta<br><em style="font-weight:400;font-size:1.1rem">Exploration &amp; Pilot Phase, 1920–1967</em></h2>
+        <p class="case-meta">
+          Operators: Imperial Oil, Shell Canada, Sun Oil / GCOS, Syncrude consortium<br>
+          First pilot plant: 1929–1930 (Research Council of Alberta)<br>
+          Commercial production commenced: 1967 (GCOS/Suncor)<br>
+          Exploration Period: ~47 years (intensified 1950–1967)<br>
+          Setting: Boreal forest; pre-existing small town; road access
+        </p>
+      </div>
+      <div class="case-summary">
+        <p>Fort McMurray's transformation from a fur-trade outpost to a resource town was built directly on the
+        decades-long, multi-operator exploration and pilot extraction program in the Athabasca oil sands.
+        Population swelled and contracted with exploration activity. The town grew to provide logistics, crew
+        housing, fuel depots, and equipment yards — itself becoming an emission source directly linked to
+        the exploration program through crew transport, urban energy use, and freight movements.</p>
+        <p>The exploration phase here is distinctively high in land disturbance (boreal forest clearing, test pits,
+        pilot plant operations) and includes Steam-Assisted Gravity Drainage (SAGD) pilot tests from the 1950s,
+        which involve significant natural gas combustion for steam generation — a category not present in
+        conventional oil exploration programs.</p>
+      </div>
+    </div>
+
+    <div class="divider-label"><span class="label">Emission Categories — Exploration &amp; Pilot Phase</span></div>
+
+    <div class="emission-grid">
+
+      <div class="emission-card diesel">
+        <h3><span></span>Rig &amp; Equipment Combustion</h3>
+        <div class="qty">~195,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Approx. 400 core holes and test wells drilled 1920–1967, avg depth ~300 m
+          (shallow bitumen target). Diesel rigs supplemented by natural gas power post-1950.
+          Pilot plant operations (Clearwater River plant 1929–30; Bitumount 1944–50;
+          GCOS construction 1964–67) included heavy equipment fleets, conveyor drives,
+          and process vessels. OPGEE ground-transport factor 0.2–0.64 kg CO₂e/m.
+          Steam generation for SAGD pilots: ~82,000 t CO₂e (natural gas combustion).
+        </p>
+      </div>
+
+      <div class="emission-card transport">
+        <h3><span></span>Mobilization &amp; Transport (incl. Town Freight)</h3>
+        <div class="qty">~145,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Fort McMurray road-accessible by Highway 63 from Edmonton (~440 km).
+          Truck freight dominant from 1950s onward. Earlier barge transport on
+          Athabasca River. Town-originated crew transport to sites adds a
+          community-displacement component unique to this scenario.
+          Estimated 1,200 crew-years of activity; weekly 880 km round-trip
+          Edmonton ↔ McMurray freight cycles factored at 35 trucks/week peak.
+        </p>
+      </div>
+
+      <div class="emission-card flare">
+        <h3><span></span>Flaring, Venting &amp; Pilot Plant Process</h3>
+        <div class="qty">~55,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Bitumen does not gas-test in the same manner as conventional oil; well testing
+          emissions are lower. However, pilot plants operated hot-water separation
+          with associated vapour losses (bitumen froth processing) and tail gas
+          stacks. GCOS plant commissioning 1967 involved flaring of associated gas
+          during startup. Venting from bitumen froth processing estimated at
+          ~12 kg CO₂e/tonne bitumen processed across pilot scale.
+        </p>
+      </div>
+
+      <div class="emission-card land">
+        <h3><span></span>Land Use &amp; Boreal Forest Disturbance</h3>
+        <div class="qty">~230,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Boreal forest carbon stock ~400 t C/ha above and below ground combined.
+          Estimated 2,800 ha cleared for exploration seismic lines, test pits,
+          open-pit pilot mines, access roads, and plant construction (1920–1967).
+          30-year biogenic release: ~70% of disturbed stock emitted as CO₂.
+          Notably higher per-hectare impact than tundra due to above-ground biomass.
+          Peat depth in this region averages 0.8–1.5 m; peat carbon loss included.
+        </p>
+      </div>
+
+      <div class="emission-card fugitive">
+        <h3><span></span>Fugitive &amp; Community-Induced Emissions</h3>
+        <div class="qty">~38,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Fugitive methane from bitumen core handling and gas-phase drilling emissions
+          are relatively low (bitumen is very low volatility). However, Fort McMurray
+          as a supported town introduces secondary community emissions:
+          heating of worker camps and housing, municipal power generation, and waste.
+          Estimated town-attributable community emissions allocated to exploration
+          program: ~28,000 t CO₂e over 47 years at 1950s–60s activity levels.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="total-bar">
+      <div>
+        <p class="label">Estimated Exploration &amp; Pilot Phase Total</p>
+        <p class="total-figure">~663,000 t CO₂e</p>
+      </div>
+      <p class="total-caveat">
+        47-year exploration/pilot program (1920–1967). Intensified activity 1950–1967 accounts for ~75% of total.
+        Community-induced emissions unique to town-supported model — not captured in standard OPGEE scope.
+        Uncertainty range ±45% reflecting sparse pre-1950 records.
+      </p>
+    </div>
+
+    <p class="source-line">
+      Sources: OPGEE v3.0 (Stanford); Oil Sands Magazine History Series; Alberta Heritage / Energy Heritage;
+      Canadian Encyclopedia Oil Sands entry; Research Council of Alberta 1930 plant reports;
+      Alberta Energy Regulator historical well database; OPGEE Land Use Module (Yeh et al.);
+      GHG Protocol Community-Scale Inventory (GPC) for town-attributed emissions.
+    </p>
+
+    <!-- ── CALCULATOR ─────────────────────────────────────────────────────── -->
+    <div class="calculator" style="margin-top:28px">
+      <p class="calc-title">⟳ Hypothetical Scenario Calculator — Resource-Town Supported Exploration</p>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>Exploration Wells / Core Holes</label>
+          <input type="number" id="fm-wells" value="400" min="1">
+        </div>
+        <div class="calc-field">
+          <label>Average Depth per Well (metres)</label>
+          <input type="number" id="fm-depth" value="300" min="50" step="50">
+        </div>
+        <div class="calc-field">
+          <label>Pilot Plant Duration (years)</label>
+          <input type="number" id="fm-plant" value="10" min="0" max="50">
+        </div>
+        <div class="calc-field">
+          <label>Steam Generation for Pilots?</label>
+          <select id="fm-steam">
+            <option value="1">Yes — SAGD / in-situ pilots</option>
+            <option value="0">No — surface mine only</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label>Land Cleared (ha)</label>
+          <input type="number" id="fm-land" value="2800" min="0">
+        </div>
+        <div class="calc-field">
+          <label>Town Support Population (avg/year)</label>
+          <input type="number" id="fm-pop" value="1500" min="0" step="100">
+        </div>
+        <div class="calc-field">
+          <label>Program Duration (years)</label>
+          <input type="number" id="fm-years" value="47" min="1" max="100">
+        </div>
+        <div class="calc-field">
+          <label>Forest Type / Carbon Stock</label>
+          <select id="fm-soilc">
+            <option value="400">Boreal forest + peat (~400 t C/ha)</option>
+            <option value="250">Mixed boreal (no deep peat) (~250)</option>
+            <option value="150">Temperate mixed forest (~150)</option>
+          </select>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calcFortMac()">Calculate Emissions</button>
+
+      <div class="calc-result" id="fm-result">
+        <div class="calc-result-row"><span class="r-label">Rig, Equipment &amp; Pilot Plant</span><span class="r-val" id="fm-r1">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Mobilization &amp; Town Freight</span><span class="r-val" id="fm-r2">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Process Flaring &amp; Venting</span><span class="r-val" id="fm-r3">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Land Use &amp; Forest Disturbance</span><span class="r-val" id="fm-r4">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Fugitive &amp; Community Emissions</span><span class="r-val" id="fm-r5">—</span></div>
+        <div class="calc-result-total">
+          <span class="r-label">Total Exploration GHG</span>
+          <span class="r-val" id="fm-total">—</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       CASE 3 — MACONDO / DEEPWATER HORIZON (OFFSHORE)
+  ════════════════════════════════════════════════════════════════════════════ -->
+  <section class="case" id="macondo">
+
+    <div class="case-header">
+      <div>
+        <span class="case-tag">Case 03 · Offshore Deepwater</span>
+        <h2>Macondo Prospect,<br>Gulf of Mexico<br><em style="font-weight:400;font-size:1.1rem">Deepwater Exploration, 2008–2010</em></h2>
+        <p class="case-meta">
+          Operator: BP (65%) / Anadarko (25%) / MOEX (10%)<br>
+          Seismic Mapping: 2008–2009<br>
+          Drilling commenced: October 7, 2009 (Marianas rig)<br>
+          Resumed: February 6, 2010 (Deepwater Horizon)<br>
+          Blowout &amp; spill: April 20, 2010 (87-day spill event)<br>
+          Water Depth: ~5,000 ft (1,524 m) · True Vertical Depth: ~18,360 ft
+        </p>
+      </div>
+      <div class="case-summary">
+        <p>The Macondo Prospect (Mississippi Canyon Block 252) was mapped by BP in 2008–2009 using
+        3D seismic. MMS approved the exploration plan April 6, 2009. Drilling began October 7, 2009
+        using the Transocean Marianas semi-submersible; it was halted by Hurricane Ida damage November 2009.
+        The Deepwater Horizon — a dynamically positioned, ultra-deepwater semi-submersible — resumed
+        drilling February 6, 2010. The catastrophic blowout April 20, 2010 resulted in 4–4.9 million
+        barrels of oil and an estimated 250,000 metric tonnes of hydrocarbon gases released over 87 days.</p>
+        <p>GHGs here split into two distinct categories: <em>normal exploration operations</em> (rig fuel burn,
+        seismic vessel emissions, crew transport) and the <em>blowout event</em> (uncontrolled fugitive gas
+        and combustion from the rig fire). Both are quantified separately.</p>
+      </div>
+    </div>
+
+    <div class="divider-label"><span class="label">Emission Categories — Exploration Phase incl. Blowout Event</span></div>
+
+    <div class="emission-grid">
+
+      <div class="emission-card diesel">
+        <h3><span></span>Rig Fuel Combustion (Normal Operations)</h3>
+        <div class="qty">~98,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Deepwater Horizon: 9-year BP contract rig (~2001–2010); prior wells at Tiber and Kaskida fields.
+          For Macondo specifically: Marianas rig 34 days active + Deepwater Horizon ~75 days before blowout.
+          Semi-submersible fuel consumption: ~100–130 t diesel/day underway/drilling.
+          ~109 rig-days × 115 t/day × 3.17 t CO₂e/t diesel = ~39,800 t CO₂e (Macondo-specific).
+          Remaining estimate allocated from Deepwater Horizon's prior deepwater exploration in GoM (2001–2010)
+          at reported fleet-level fuel intensity.
+        </p>
+      </div>
+
+      <div class="emission-card transport">
+        <h3><span></span>Seismic Survey &amp; Supply Vessel Operations</h3>
+        <div class="qty">~42,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          3D seismic survey 2008–2009: estimated 60-day vessel program.
+          A single offshore seismic survey ship emits ~100+ t CO₂/day (JOUAV, 2025).
+          Seismic program: ~6,000 t CO₂e. Supply vessel logistics (Gulf of Mexico
+          base: Port Fourchon, LA): 2–3 supply boats servicing daily, avg 160 km
+          round-trip, diesel-powered. 109 active days: ~18,000 t CO₂e in supply runs.
+          Helicopter crew rotations: ~14,000 t CO₂e. Guard vessel: ~4,000 t CO₂e.
+        </p>
+      </div>
+
+      <div class="emission-card flare">
+        <h3><span></span>Blowout: Rig Fire &amp; Uncontrolled Gas Release</h3>
+        <div class="qty">~7,200,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          This category dominates all others by orders of magnitude.
+          50 billion cubic feet of methane reported released (patent literature; NRDC estimates).
+          250,000 metric tonnes of hydrocarbon gases discharged (Joye 2015, ScienceDirect).
+          CH₄ component at GWP100 = 28: ~6.6 Mt CO₂e from gas alone.
+          36-hour rig fire combustion of surface hydrocarbons: ~180,000 t CO₂e.
+          Atmospheric combustion of flared oil during 87-day burn-off operations: ~420,000 t CO₂e.
+          This figure represents a catastrophic tail-risk scenario, not typical exploration.
+        </p>
+      </div>
+
+      <div class="emission-card land">
+        <h3><span></span>Seabed Disturbance &amp; Deepwater Plume</h3>
+        <div class="qty">~190,000</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Deepwater sediment carbon: ~8–15 mg C/g dry sediment across affected Gulf benthos.
+          Physical disturbance from drill cuttings, anchor chains, and blowout debris over
+          ~35 km² documented impact area (DWH footprint analysis, PMC7326171).
+          ~50% of discharged oil entrained in deepwater plume (Joye 2015),
+          where anaerobic degradation produces CH₄ and CO₂. Benthic oxidation
+          of settled hydrocarbons: long-term diffuse emission estimated at
+          ~190,000 t CO₂e over 5-year post-event horizon.
+        </p>
+      </div>
+
+      <div class="emission-card fugitive">
+        <h3><span></span>Fugitive Methane (Normal Drilling Operations)</h3>
+        <div class="qty">~3,200</div>
+        <div class="qty-unit">tonnes CO₂e</div>
+        <p class="qty-note">
+          Under normal (non-blowout) deepwater drilling operations: mud gas separator
+          venting, gas kicks in high-pressure Macondo reservoir (encountered multiple
+          pore-pressure exceedances documented in BP accident investigation report).
+          Deepwater fugitive rates lower than onshore due to pressurized marine riser
+          systems. OPGEE deepwater default: ~0.3 g CH₄/m drilled.
+          Total depth 18,360 ft (5,596 m) × factor = ~1.7 t CH₄ = ~47 t CO₂e normal operations.
+          Adjusted upward to ~114 t CH₄ for documented kick events × GWP100 = 28.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="total-bar">
+      <div>
+        <p class="label">Estimated Total incl. Blowout Event</p>
+        <p class="total-figure">~7,533,000 t CO₂e</p>
+      </div>
+      <p class="total-caveat">
+        Normal exploration operations only: ~333,000 t CO₂e · Blowout event: ~7,200,000 t CO₂e.
+        The blowout represents a 22× multiplier over the entire normal operational footprint —
+        illustrating why tail-risk GHG quantification belongs in any exploration-phase intervention accounting framework.
+        Uncertainty range: blowout ±30%; normal operations ±20%.
+      </p>
+    </div>
+
+    <p class="source-line">
+      Sources: BP Accident Investigation Report (2010); Joye (2015) ScienceDirect; Wikipedia / Macondo Prospect;
+      National Academies Press — Macondo Well Blowout (2012); JOUAV Seismic Survey Guide (2025);
+      EPA Deepwater Horizon enforcement record; NRDC gas volume estimates; PMC7326171 (DWH benthic footprint);
+      OPGEE v3.0 deepwater defaults; patent literature (CH₄ volume estimates).
+    </p>
+
+    <!-- ── CALCULATOR ─────────────────────────────────────────────────────── -->
+    <div class="calculator" style="margin-top:28px">
+      <p class="calc-title">⟳ Hypothetical Scenario Calculator — Offshore Deepwater Exploration</p>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>Active Drilling Days</label>
+          <input type="number" id="mc-days" value="109" min="1" max="730">
+        </div>
+        <div class="calc-field">
+          <label>Rig Fuel Consumption (t diesel/day)</label>
+          <select id="mc-rigfuel">
+            <option value="115">Ultra-deepwater semi-sub (~115 t/day)</option>
+            <option value="75">Mid-water semi-sub (~75 t/day)</option>
+            <option value="45">Jack-up rig (~45 t/day)</option>
+            <option value="25">Tender / small platform (~25 t/day)</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label>Seismic Survey Vessel Days</label>
+          <input type="number" id="mc-seismic" value="60" min="0" max="365">
+        </div>
+        <div class="calc-field">
+          <label>Supply Boat Runs per Day</label>
+          <input type="number" id="mc-supply" value="2.5" min="0" step="0.5">
+        </div>
+        <div class="calc-field">
+          <label>Round-Trip to Shore Base (km)</label>
+          <input type="number" id="mc-dist" value="160" min="10">
+        </div>
+        <div class="calc-field">
+          <label>Well Total Depth (metres)</label>
+          <input type="number" id="mc-depth" value="5596" min="500">
+        </div>
+        <div class="calc-field">
+          <label>Include Blowout Risk Scenario?</label>
+          <select id="mc-blowout">
+            <option value="0">No — normal operations only</option>
+            <option value="0.001">Low risk (p=0.001 × 7.2 Mt CO₂e)</option>
+            <option value="0.01">Moderate risk (p=0.01)</option>
+            <option value="1">Full blowout event (Macondo-scale)</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label>Blowout Gas Volume (Bcf, if applicable)</label>
+          <input type="number" id="mc-gas" value="50" min="0" step="1">
+        </div>
+      </div>
+      <button class="calc-btn" onclick="calcMacondo()">Calculate Emissions</button>
+
+      <div class="calc-result" id="mc-result">
+        <div class="calc-result-row"><span class="r-label">Rig Fuel Combustion</span><span class="r-val" id="mc-r1">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Seismic &amp; Supply Vessel Operations</span><span class="r-val" id="mc-r2">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Blowout / Well Fire (expected value)</span><span class="r-val" id="mc-r3">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Seabed &amp; Deepwater Plume</span><span class="r-val" id="mc-r4">—</span></div>
+        <div class="calc-result-row"><span class="r-label">Fugitive CH₄ (normal drilling)</span><span class="r-val" id="mc-r5">—</span></div>
+        <div class="calc-result-total">
+          <span class="r-label">Total Exploration GHG</span>
+          <span class="r-val" id="mc-total">—</span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- ═══ FOOTER ══════════════════════════════════════════════════════════════ -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-block">
+        <h3>Key Data Sources</h3>
+        <ul>
+          <li>OPGEE v3.0b — Stanford Environmental Assessment &amp; Optimization Group</li>
+          <li>EPA Greenhouse Gas Reporting Program (GHGRP) — Subpart W &amp; C</li>
+          <li>EPA AP-42 Compilation of Air Emission Factors — Ch. 5 Petroleum Industry</li>
+          <li>IEA Global Methane Tracker 2025</li>
+          <li>NASA ORNL GSOC — Global Soil Organic Carbon Database</li>
+          <li>AAPG Bulletin 1970 — Morgridge, Prudhoe Bay Geology</li>
+          <li>BP Macondo Accident Investigation Report (2010)</li>
+          <li>National Academies Press — Macondo Well Blowout (2012)</li>
+          <li>Oil Sands Magazine — History of Alberta Oil Sands</li>
+          <li>GHG Protocol for Project Accounting (WBCSD / WRI)</li>
+        </ul>
+      </div>
+      <div class="footer-block">
+        <h3>Emission Factor Reference</h3>
+        <ul>
+          <li>Diesel combustion: 3.17 t CO₂e / t diesel (EPA)</li>
+          <li>Natural gas combustion: 2.2 t CO₂e / 1,000 m³</li>
+          <li>CH₄ GWP100: 28 (IPCC AR5)</li>
+          <li>Heli-supported drilling: 4–126 kg CO₂e/m (median 15)</li>
+          <li>Ground-access drilling: 0.06–0.64 kg CO₂e/m (median 0.20)</li>
+          <li>Seismic survey vessel: ~100 t CO₂/day (offshore)</li>
+          <li>Supply vessel 160 km round-trip: ~8 t CO₂e/run</li>
+          <li>Boreal forest carbon stock: ~400 t C/ha</li>
+          <li>Arctic permafrost carbon stock: ~950 t C/ha</li>
+          <li>Well test flaring: ~206 t CO₂e/well (30-day avg)</li>
+          <li>Well test venting: ~651 t CO₂e/well (3× flaring)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="caveat-box">
+      <strong>Methodological Caveat.</strong> All quantities in this document are estimates constructed from published emission factors, OPGEE model defaults, and documented operational parameters. They are not audited verified inventories. Pre-1990 operations predate mandatory GHG reporting in all three jurisdictions; uncertainty ranges of ±30–45% should be applied. For intervention accounting and counterfactual baseline construction, these estimates require supplementation with facility-level measurement data, operator records, and regulatory filings where available. The blowout scenario in Case 03 represents a documented tail-risk event, not a normal operational outcome; its inclusion reflects the requirement under GHG Protocol Project Accounting guidance to account for material risk events within a program's emission boundary.
+    </div>
+  </footer>
+
+</div><!-- /page-wrap -->
+
+
+<!-- ═══ CALCULATOR SCRIPTS ═══════════════════════════════════════════════════ -->
+<script>
+/* ── Utilities ─────────────────────────────────────────────────────────────── */
+function fmt(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + ' Mt CO₂e';
+  return Math.round(n).toLocaleString() + ' t CO₂e';
+}
+
+function showResult(id) {
+  document.getElementById(id).classList.add('visible');
+}
+
+/* ── PRUDHOE BAY ────────────────────────────────────────────────────────────── */
+function calcPrudhoe() {
+  const footage    = +document.getElementById('pb-footage').value  || 760000;
+  const accessFac  = +document.getElementById('pb-access').value   || 15;
+  const tests      = +document.getElementById('pb-tests').value    || 12;
+  const testDays   = +document.getElementById('pb-testdays').value || 60;
+  const land       = +document.getElementById('pb-land').value     || 3200;
+  const soilC      = +document.getElementById('pb-soilc').value    || 950;
+
+  /* Rig + equipment: footage × access factor (kg CO₂e/m → tonnes) */
+  /* Arctic heating premium: +35% for sub-zero operations */
+  const rigEmit    = footage * accessFac * 1.35 / 1000;
+
+  /* Transport: proportional to footage at ~0.41 × rig for heli-dominated */
+  const transportFrac = accessFac >= 15 ? 0.64 : (accessFac >= 4 ? 0.45 : 0.20);
+  const transport  = footage * accessFac * transportFrac / 1000;
+
+  /* Flaring: test days × avg gas rate 2 MMcfd × 85% CH₄ × GWP28 + CO₂ combustion */
+  /* Each test day: ~30 t CO₂e flaring (200 bbl/d gas rate at 1960s practice) */
+  const flare      = tests * testDays * 30;
+
+  /* Land use: disturbed ha × soil carbon t C/ha × 0.70 release fraction × 44/12 (C→CO₂) */
+  const landEmit   = land * soilC * 0.70 * (44 / 12);
+
+  /* Fugitive: 0.5 g CH₄/m × footage / 1e6 t → × GWP28 */
+  const fugitive   = footage * 0.5 / 1e6 * 28 * 1000; /* kg→t */
+
+  const total = rigEmit + transport + flare + landEmit + fugitive;
+
+  document.getElementById('pb-r1').textContent = fmt(rigEmit);
+  document.getElementById('pb-r2').textContent = fmt(transport);
+  document.getElementById('pb-r3').textContent = fmt(flare);
+  document.getElementById('pb-r4').textContent = fmt(landEmit);
+  document.getElementById('pb-r5').textContent = fmt(fugitive);
+  document.getElementById('pb-total').textContent = fmt(total);
+  showResult('pb-result');
+}
+
+/* ── FORT McMURRAY ──────────────────────────────────────────────────────────── */
+function calcFortMac() {
+  const wells    = +document.getElementById('fm-wells').value   || 400;
+  const depth    = +document.getElementById('fm-depth').value   || 300;
+  const plant    = +document.getElementById('fm-plant').value   || 10;
+  const steam    = +document.getElementById('fm-steam').value   || 1;
+  const land     = +document.getElementById('fm-land').value    || 2800;
+  const pop      = +document.getElementById('fm-pop').value     || 1500;
+  const years    = +document.getElementById('fm-years').value   || 47;
+  const soilC    = +document.getElementById('fm-soilc').value   || 400;
+
+  /* Rig combustion: wells × depth (m) × 0.2 kg CO₂e/m (road-accessible) → tonnes */
+  const footage  = wells * depth;
+  let rigEmit    = footage * 0.2 / 1000;
+
+  /* Steam generation: 82,000 t CO₂e / 10-year baseline × plant duration × steam flag */
+  const steamEmit = steam * plant * 8200;
+  rigEmit += steamEmit;
+
+  /* Transport: truck freight Edmonton–McMurray 880 km round trip */
+  /* 35 trucks/week peak scaled to pop; diesel truck 0.35 kg CO₂e/km */
+  const truckTrips = (pop / 1500) * 35 * years * 52;
+  const transport  = truckTrips * 880 * 0.35 / 1000;
+
+  /* Flaring/process venting: 12 kg CO₂e/t bitumen pilot output */
+  /* Assume 500 t/day pilot output × 365 × plant years */
+  const flare = plant * 365 * 500 * 12 / 1000;
+
+  /* Land use: ha × soil C × 0.70 × 44/12 */
+  const landEmit = land * soilC * 0.70 * (44 / 12);
+
+  /* Fugitive: 28,000 t / 47-year baseline scaled */
+  const fugitive = (years / 47) * 28000 + (pop * years * 2.5);
+
+  const total = rigEmit + transport + flare + landEmit + fugitive;
+
+  document.getElementById('fm-r1').textContent = fmt(rigEmit);
+  document.getElementById('fm-r2').textContent = fmt(transport);
+  document.getElementById('fm-r3').textContent = fmt(flare);
+  document.getElementById('fm-r4').textContent = fmt(landEmit);
+  document.getElementById('fm-r5').textContent = fmt(fugitive);
+  document.getElementById('fm-total').textContent = fmt(total);
+  showResult('fm-result');
+}
+
+/* ── MACONDO ────────────────────────────────────────────────────────────────── */
+function calcMacondo() {
+  const days       = +document.getElementById('mc-days').value      || 109;
+  const rigFuel    = +document.getElementById('mc-rigfuel').value   || 115;
+  const seismicDays= +document.getElementById('mc-seismic').value   || 60;
+  const supplyRuns = +document.getElementById('mc-supply').value    || 2.5;
+  const dist       = +document.getElementById('mc-dist').value      || 160;
+  const tdepth     = +document.getElementById('mc-depth').value     || 5596;
+  const blowoutP   = +document.getElementById('mc-blowout').value   || 0;
+  const gasVol     = +document.getElementById('mc-gas').value       || 50;
+
+  /* Rig: days × t diesel/day × 3.17 t CO₂e/t diesel */
+  const rigEmit    = days * rigFuel * 3.17;
+
+  /* Seismic + supply vessels */
+  const seismic    = seismicDays * 100; /* 100 t CO₂/day survey vessel */
+  const supply     = days * supplyRuns * dist * 0.05; /* 0.05 t CO₂e/km for supply boat */
+  const helicopter = days * 2 * 80 * 0.35 / 1000 * 1000; /* 2 heli flights/day, 80 km, 0.35 kg/km, persons */
+  const transport  = seismic + supply + helicopter;
+
+  /* Blowout: expected value = probability × full Macondo blowout GHG */
+  /* Full Macondo blowout = gasVol Bcf CH₄ × GWP28 + rig fire + oil burn */
+  const gasToT     = gasVol * 1e9 * 0.0283168 * 0.717 / 1000; /* Bcf→m³→kg CH₄→t */
+  const blowoutFull = gasToT * 28 + 180000 + 420000; /* CH₄ CO₂e + rig fire + oil burn */
+  const blowout    = blowoutP * blowoutFull;
+
+  /* Seabed: proportional to blowout; minimal under normal ops */
+  const seabed     = blowoutP >= 1 ? 190000 : blowoutP * 190000 * 5;
+
+  /* Fugitive: 0.3 g CH₄/m × depth × GWP28 */
+  const fugitive   = tdepth * 0.3 / 1e6 * 28 * 1000;
+
+  const total = rigEmit + transport + blowout + seabed + fugitive;
+
+  document.getElementById('mc-r1').textContent = fmt(rigEmit);
+  document.getElementById('mc-r2').textContent = fmt(transport);
+  document.getElementById('mc-r3').textContent = fmt(blowout);
+  document.getElementById('mc-r4').textContent = fmt(seabed);
+  document.getElementById('mc-r5').textContent = fmt(fugitive);
+  document.getElementById('mc-total').textContent = fmt(total);
+  showResult('mc-result');
+}
+</script>
+
+</body>
+</html>
